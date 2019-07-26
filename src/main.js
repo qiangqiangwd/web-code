@@ -14,7 +14,21 @@ import loading from './assets/js/loading';
 import message from './assets/js/message';
 Vue.prototype.$message = message;
 Vue.prototype.$loading = loading;
-  
+
+// 全局注册 过滤器
+Vue.filter('timeFilter', function (value) {
+  let date = new Date(value * 1000);
+  let [year, month, day, hour, minute, second] = [
+    date.getFullYear(),
+    date.getMonth() + 1,
+    date.getDate(),
+    date.getHours(),
+    date.getMinutes(),
+    date.getSeconds(),
+  ];
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+})
+
 new Vue({
   router,
   store,

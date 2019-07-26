@@ -1,5 +1,20 @@
 <template>
   <div class="commentList">
+    <!-- 发表评论 -->
+    <div class="sendMsgBox">
+      <div class="title">
+        讨论区
+        <i class="iconfont">&#xe89e;</i>
+      </div>
+      <button
+        :class="['mainButton',userInfo?'success':'disabled']"
+        :title="userInfo?'':'请先登录'"
+        @click="visibility = true"
+      >
+        <i class="iconfont">&#xe8ad;</i> 发表评论
+      </button>
+    </div>
+    <!-- 内容部分 -->
     <div class="contentList">
       <!-- 一级评论 -->
       <div v-for="item in commentList" :key="item.id" class="comBox first">
@@ -8,6 +23,7 @@
           <img src="../../assets/img/akalin.jpg" v-else />
         </div>
         <div class="content">
+          <!-- 昵称+其他操作 -->
           <div class="name">
             <a>{{item.name}}</a>
             <div class="iconList">
@@ -18,6 +34,9 @@
               <a class="iconfont" title="回复">&#xe8ab;</a>
             </div>
           </div>
+          <!-- 时间 -->
+          <div class="time">{{item.create_time | timeFilter()}}</div>
+          <!-- 内容 -->
           <div class="cnt">{{item.content}}</div>
 
           <!-- 二级评论 -->
@@ -37,6 +56,8 @@
                     <a class="iconfont" title="回复">&#xe8ab;</a>
                   </div>
                 </div>
+                <!-- 时间 -->
+                <div class="time">{{sItm.create_time | timeFilter()}}</div>
                 <div class="cnt">
                   <a class="linkedName">@{{sItm.linked_user_name}}</a>
                   {{sItm.content}}
@@ -47,24 +68,23 @@
         </div>
       </div>
     </div>
-    <!-- 发表评论 -->
-    <div class="sendMsgBox">
-      <button 
-      :class="['mainButton',userInfo?'success':'disabled']" 
-      :title="userInfo?'':'请先登录'">
-        <i class="iconfont">&#xe8ad;</i> 发表评论
-      </button>
-    </div>
+
+    <inputPopup :visibility.sync="visibility"></inputPopup>
   </div>
 </template>
 
 <script>
 import { mapActions } from "vuex";
+import inputPopup from "../../components/inputPopup"; // 输入弹出框
 export default {
   data() {
     return {
-      commentList: []
+      commentList: [],
+      visibility: true // 弹框时否显示
     };
+  },
+  components: {
+    inputPopup
   },
   computed: {
     // 公共用户信息
@@ -80,7 +100,6 @@ export default {
       if (res.status) {
         this.commentList.push(...res.data.dataList);
       }
-      console.log(res);
     });
   },
   mounted() {}
@@ -109,7 +128,7 @@ export default {
         .name {
           color: @mainColor2;
           font-size: 14px;
-          margin-bottom: 10px;
+          margin-bottom: 3px;
 
           display: flex;
           align-items: center;
@@ -135,6 +154,11 @@ export default {
               }
             }
           }
+        }
+        .time {
+          color: @mainColor3;
+          font-size: 12px;
+          margin-bottom: 10px;
         }
         .cnt {
           color: @mainColor;
@@ -181,8 +205,17 @@ export default {
   }
 
   .sendMsgBox {
-    text-align: right;
-    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px 0;
+    .title {
+      font-size: 18px;
+      font-weight: 600;
+      padding-left: 15px;
+      border-left: 4px solid @successColor;
+      line-height: 1;
+    }
   }
 }
 </style>
