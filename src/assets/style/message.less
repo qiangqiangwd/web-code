@@ -1,0 +1,61 @@
+#message-outer-box {
+  display: inline-block;
+  position: fixed;
+//   top: 10px;
+  top: 50%;
+  left: 50%;
+  z-index: 1001;
+  transform: translate(-50%,-50%);
+//   background: red;
+  .message-layer {
+    // display: inline-block;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    font-size: 12px;
+    max-width: 200px;
+    min-width: 80px;
+    text-align: center;
+    border-radius: 4px;
+    margin-bottom: 10px;
+
+    /* Chrome all / Safari all /opera15+*/
+    -webkit-user-select: none;
+    /* Firefox all */
+    -moz-user-select: none;
+    /* IE 10+ */
+    -ms-user-select: none;
+    /* 通用 */
+    user-select: none;
+  }
+  .show-message-layer {
+    animation: msg-move-in 0.25s forwards; // 停在最后一帧
+  }
+  .hide-message-layer {
+    animation: msg-move-out 0.25s forwards; // 停在最后一帧
+  }
+}
+
+// 显示
+@keyframes msg-move-in {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform:scale(1);
+    opacity: 1;
+  }
+}
+
+// 隐藏
+@keyframes msg-move-out {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
