@@ -1,0 +1,48 @@
+// 所有组件 样式所在（load,message 除外）
+
+// 表情包弹框 样式
+#self-faceBao-box{
+    padding: 10px;
+    background: #ffffff;
+    // background: blue;
+    position: fixed;
+    z-index: 1001;
+    border: 1px solid @borderColor;
+    border-radius: 4px;
+    height: 200px;
+    // box-sizing: border-box;
+    // overflow-y: auto; 
+    &::after{
+        content:'';
+        width:0;
+        height: 0;
+        border-left: 10px solid transparent;   
+        border-right: 10px solid transparent;   
+        border-top: 10px solid transparent;   
+        border-bottom: 10px solid @borderColor;   
+        position: absolute;
+        top: 0;
+        left: 50%;
+        margin-left: -10px;
+        margin-top: -20px;
+    }
+    ul{
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+        // display: flex;
+        // flex-wrap: wrap;
+        li{
+            width: 20%;
+            height: 50px;
+            float: left;
+            text-align: center;
+            margin-bottom: 5px;
+            img{
+                max-width: 100%;
+                max-height: 100%;
+                cursor: pointer;
+            }
+        }
+    }
+}

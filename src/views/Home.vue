@@ -9,11 +9,15 @@
       <div class="userInfoBox">
         <div v-if="userInfo" class="detailBox">
           <div class="box">
-            <img :src="userInfo.head_img" alt />
+            <img :src="userInfo.head_img" v-if="userInfo.head_img" alt />
+            <img src="../assets/img/akalin.jpg" v-else />
           </div>
           <div class="box">
             <div>{{userInfo.name}}</div>
             <div>{{userInfo.last_login_time}}</div>
+            <div>
+              <button class="mainButton" @click="signOut">退出登录</button>
+            </div>
           </div>
         </div>
         <div v-else>
@@ -50,6 +54,11 @@ export default {
   },
   methods: {
     // ...mapActions("ajax", ["isLogin"]),
+    // 退出登录
+    signOut(){
+      window.localStorage.removeItem('CQUID'); // 清除 uid
+      this.$store.state.userInfo = null; // 清除用户数据
+    },
   },
   created() {},
   mounted() {}

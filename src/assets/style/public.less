@@ -6,7 +6,8 @@
 @borderColor: #e8eaec; // 再次级
 
 @successColor: #19be6b; // 成功颜色
-@blueColor: #5cadff; //
+@redColor: #ed4014; // 红色
+@blueColor: #5cadff; // 
 
 // 公共按钮样式
 .mainButton {
@@ -20,15 +21,35 @@
   color: #ffffff;
   font-size: 14px;
   background: @mainColor;
+  opacity: 1;
+  transition: opacity linear .25s;
+  &:hover{
+    transition: opacity linear .25s;
+    opacity: .8;
+  }
 }
 .mainButton.success {
   background: @successColor;
 }
+.mainButton.Info {
+  background: @blueColor;
+}
 .mainButton.disabled {
   background: @Invalid;
-  cursor: not-allowed;
+  // cursor: not-allowed;
 }
 
 a {
   text-decoration: none;
+}
+li{
+  list-style-type: none;
+}
+
+.firstTit {
+  font-size: 18px;
+  font-weight: 600;
+  padding-left: 15px;
+  border-left: 4px solid @successColor;
+  line-height: 1;
 }

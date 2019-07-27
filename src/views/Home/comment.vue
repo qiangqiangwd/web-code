@@ -2,14 +2,14 @@
   <div class="commentList">
     <!-- 发表评论 -->
     <div class="sendMsgBox">
-      <div class="title">
+      <div class="firstTit">
         讨论区
         <i class="iconfont">&#xe89e;</i>
       </div>
       <button
         :class="['mainButton',userInfo?'success':'disabled']"
         :title="userInfo?'':'请先登录'"
-        @click="visibility = true"
+        @click="showCommentModel"
       >
         <i class="iconfont">&#xe8ad;</i> 发表评论
       </button>
@@ -37,7 +37,7 @@
           <!-- 时间 -->
           <div class="time">{{item.create_time | timeFilter()}}</div>
           <!-- 内容 -->
-          <div class="cnt">{{item.content}}</div>
+          <div class="cnt" v-html="item.content"></div>
 
           <!-- 二级评论 -->
           <div class="second" v-if="item.second_comment.length > 0">
@@ -60,7 +60,7 @@
                 <div class="time">{{sItm.create_time | timeFilter()}}</div>
                 <div class="cnt">
                   <a class="linkedName">@{{sItm.linked_user_name}}</a>
-                  {{sItm.content}}
+                  <span v-html="sItm.content"></span>
                 </div>
               </div>
             </div>
@@ -68,23 +68,30 @@
         </div>
       </div>
     </div>
+    <page count="page.count"></page>
 
-    <inputPopup :visibility.sync="visibility"></inputPopup>
+    <inputPopup :visibility.sync="visibility" @updateComment='getCommentData'></inputPopup>
   </div>
 </template>
 
 <script>
 import { mapActions } from "vuex";
 import inputPopup from "../../components/inputPopup"; // 输入弹出框
+import page from "../../components/pagination"; // 输入弹出框
 export default {
   data() {
     return {
       commentList: [],
-      visibility: true // 弹框时否显示
+      visibility: false, // 弹框时否显示
+
+      // 分页部分数据
+      page:{
+        count:0
+      }
     };
   },
   components: {
-    inputPopup
+    inputPopup,page
   },
   computed: {
     // 公共用户信息
@@ -93,14 +100,35 @@ export default {
     }
   },
   methods: {
-    ...mapActions("ajax", ["getComment"])
+    ...mapActions("ajax", ["getComment"]),
+    // 添加一条创建的评论
+    addNewComment(data) {
+    },
+    // 打开评论弹框
+    showCommentModel(){
+      if(!this.userInfo){
+        this.$parent.isShowLogin = true; // 显示登录弹框
+        return
+      }
+      this.visibility = true;
+    },
+
+    // 获取评论数据
+    getCommentData() {
+      this.getComment().then(res => {
+        if (res.status) {
+          let commentList = res.data.dataList;
+          commentList.forEach(item => {
+            item.content = decodeURIComponent(item.content); // 先进行一遍转码
+          });
+          this.commentList = []; // 先清空数组
+          this.commentList.push(...commentList);
+        }
+      });
+    }
   },
   created() {
-    this.getComment().then(res => {
-      if (res.status) {
-        this.commentList.push(...res.data.dataList);
-      }
-    });
+    this.getCommentData();
   },
   mounted() {}
 };
@@ -164,7 +192,7 @@ export default {
           color: @mainColor;
           min-height: 25px;
           margin-bottom: 20px;
-          line-height: 1.5;
+          line-height: 1.4;
         }
         a {
           cursor: pointer;
@@ -198,6 +226,13 @@ export default {
         .content {
           .cnt {
             margin-bottom: 0;
+            a,
+            span {
+              vertical-align: middle;
+            }
+            span {
+              margin-left: 5px;
+            }
           }
         }
       }
@@ -209,13 +244,6 @@ export default {
     justify-content: space-between;
     align-items: center;
     margin: 25px 0;
-    .title {
-      font-size: 18px;
-      font-weight: 600;
-      padding-left: 15px;
-      border-left: 4px solid @successColor;
-      line-height: 1;
-    }
   }
 }
 </style>
