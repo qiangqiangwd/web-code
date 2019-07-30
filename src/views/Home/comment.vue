@@ -9,7 +9,7 @@
       <button
         :class="['mainButton',userInfo?'success':'disabled']"
         :title="userInfo?'':'请先登录'"
-        @click="showCommentModel"
+        @click="showCommentModel(null)"
       >
         <i class="iconfont">&#xe8ad;</i> 发表评论
       </button>
@@ -17,7 +17,7 @@
     <!-- 内容部分 -->
     <div class="contentList">
       <!-- 一级评论 -->
-      <div v-for="item in commentList" :key="item.id" class="comBox first">
+      <div v-for="(item,index) in commentList" :key="item.id" class="comBox first">
         <div class="head">
           <img :src="item.head_img" v-if="item.head_img" />
           <img src="../../assets/img/akalin.jpg" v-else />
@@ -27,21 +27,34 @@
           <div class="name">
             <a>{{item.name}}</a>
             <div class="iconList">
-              <a class="liked" title="赞">
+              <a
+                :class="item.id | isAddLiked(commentLikedArray)"
+                title="赞"
+                @click="likedChange(item,index)"
+              >
                 <span class="iconfont">&#xe87c;</span>
                 <span>{{item.liked}}</span>
               </a>
-              <a class="iconfont" title="回复">&#xe8ab;</a>
+              <a class="iconfont cb" title="回复" @click="showCommentModel(item)">&#xe8ab;</a>
+              <a
+                class="iconfont del"
+                title="删除"
+                v-if="userInfo && userInfo.id == item.user_id"
+                @click="delCommentOpt(item,index)"
+              >&#xe88e;</a>
             </div>
           </div>
           <!-- 时间 -->
-          <div class="time">{{item.create_time | timeFilter()}}</div>
+          <div class="time">
+            <div>{{item.create_time | timeFilter()}}</div>
+            <div class="index">#{{index+1+page.pageSize*(page.pageIndex - 1)}}</div>
+          </div>
           <!-- 内容 -->
-          <div class="cnt" v-html="item.content"></div>
+          <div class="cnt" v-html="$options.filters.cntHtml(item.content)"></div>
 
           <!-- 二级评论 -->
           <div class="second" v-if="item.second_comment.length > 0">
-            <div v-for="sItm in item.second_comment" :key="sItm.id" class="comBox">
+            <div v-for="(sItm,sIndex) in item.second_comment" :key="sItm.id" class="comBox">
               <div class="head">
                 <img :src="sItm.head_img" alt />
               </div>
@@ -49,18 +62,28 @@
                 <div class="name">
                   <a>{{sItm.name}}</a>
                   <div class="iconList">
-                    <a class="liked" title="赞">
+                    <a
+                      :class="item.id | isAddLiked(commentLikedArray)"
+                      title="赞"
+                      @click="likedChange(sItm,index,sIndex)"
+                    >
                       <span class="iconfont">&#xe87c;</span>
                       <span>{{sItm.liked}}</span>
                     </a>
-                    <a class="iconfont" title="回复">&#xe8ab;</a>
+                    <a class="iconfont cb" title="回复" @click="showCommentModel(sItm)">&#xe8ab;</a>
+                    <a
+                      class="iconfont del"
+                      title="删除"
+                      v-if="userInfo && userInfo.id == sItm.user_id"
+                      @click="delCommentOpt(sItm,index,sIndex)"
+                    >&#xe88e;</a>
                   </div>
                 </div>
                 <!-- 时间 -->
                 <div class="time">{{sItm.create_time | timeFilter()}}</div>
                 <div class="cnt">
                   <a class="linkedName">@{{sItm.linked_user_name}}</a>
-                  <span v-html="sItm.content"></span>
+                  <span v-html="$options.filters.cntHtml(sItm.content)"></span>
                 </div>
               </div>
             </div>
@@ -68,9 +91,20 @@
         </div>
       </div>
     </div>
-    <page count="page.count"></page>
+    <div class="pageList">
+      <page
+        :count="page.count"
+        :pageIndex.sync="page.pageIndex"
+        @index-change="indexChange"
+        :pageSize="page.pageSize"
+      ></page>
+    </div>
 
-    <inputPopup :visibility.sync="visibility" @updateComment='getCommentData'></inputPopup>
+    <inputPopup
+      :visibility.sync="visibility"
+      @updateComment="getCommentData"
+      :linkedData="linkedData"
+    ></inputPopup>
   </div>
 </template>
 
@@ -83,15 +117,32 @@ export default {
     return {
       commentList: [],
       visibility: false, // 弹框时否显示
+      linkedData: null, // 关联的评论相关信息
+
+      commentLikedArray: [], // 保存点赞过的评论id
 
       // 分页部分数据
-      page:{
-        count:0
+      page: {
+        count: 0,
+        pageIndex: 1,
+        pageSize: 10
       }
     };
   },
+  filters: {
+    // 对评论内容进行转码
+    cntHtml(cnt) {
+      return decodeURIComponent(cnt);
+    },
+    // 是否点过赞
+    isAddLiked(id, commentLikedArray) {
+      let isHas = commentLikedArray.filter(r => r == id).length > 0; // 判断是否点过赞
+      return isHas ? "liked isHas" : "liked";
+    }
+  },
   components: {
-    inputPopup,page
+    inputPopup,
+    page
   },
   computed: {
     // 公共用户信息
@@ -100,41 +151,122 @@ export default {
     }
   },
   methods: {
-    ...mapActions("ajax", ["getComment"]),
+    ...mapActions("ajax", ["getComment", "likedComment", "delComment"]),
     // 添加一条创建的评论
-    addNewComment(data) {
-    },
+    addNewComment(data) {},
     // 打开评论弹框
-    showCommentModel(){
-      if(!this.userInfo){
+    showCommentModel(data) {
+      if (!this.userInfo) {
         this.$parent.isShowLogin = true; // 显示登录弹框
-        return
+        return;
       }
+      this.linkedData = data; // 相关联评论信息
       this.visibility = true;
     },
 
     // 获取评论数据
     getCommentData() {
-      this.getComment().then(res => {
+      let pageOpt = this.page; // 分页相关数据
+      // 上传的参数
+      let sendData = {
+        pageIndex: pageOpt.pageIndex,
+        pageSize: pageOpt.pageSize
+      };
+      this.getComment(sendData).then(res => {
         if (res.status) {
-          let commentList = res.data.dataList;
-          commentList.forEach(item => {
-            item.content = decodeURIComponent(item.content); // 先进行一遍转码
-          });
+          let data = res.data; // 获取数据
           this.commentList = []; // 先清空数组
-          this.commentList.push(...commentList);
+          this.commentList.push(...data.dataList);
+
+          if (data.count != pageOpt.count) this.page.count = data.count;
+        }
+      });
+    },
+
+    // 改变评论分页，并重新获取数据
+    indexChange(index) {
+      this.page.pageIndex = index;
+      this.getCommentData();
+    },
+
+    // 进行点赞
+    likedChange(data, idx1, idx2) {
+      let type = this.commentLikedArray.filter(id => data.id == id).length > 0; // 判断是否有过添加
+      // 以下为保存点赞的相关操作
+      if (type) {
+        // 若有过则取消点赞
+        for (let i = 0; i < this.commentLikedArray.length; i++) {
+          if (this.commentLikedArray[i] == data.id) {
+            this.commentLikedArray.splice(i, 1); // 删除对应的
+            break;
+          }
+        }
+      } else {
+        // 若未保存过则进行添加
+        this.commentLikedArray.push(data.id);
+      }
+
+      // 重新保存
+      window.localStorage.removeItem("commentLikedArray"); // 先删除在添加
+      window.localStorage.setItem(
+        "commentLikedArray",
+        JSON.stringify(this.commentLikedArray)
+      );
+
+      this.likedComment({
+        id: data.id,
+        type: !type
+      }).then(res => {
+        if (res.status) {
+          let commentList = this.commentList[idx1];
+          if (typeof idx2 === "number") {
+            commentList.second_comment[idx2].liked = res.data;
+          } else {
+            commentList.liked = res.data;
+          }
+          this.commentList.splice(idx1, 1, commentList);
+
+          this.$message(res.msg);
+        }
+      });
+    },
+
+    // 删除评论
+    delCommentOpt(data, idx1, idx2) {
+      this.delComment({
+        id: data.id
+      }).then(res => {
+        if (res.status) {
+          this.$message("删除成功");
+          // 删除对应的数据
+          let commentList = this.commentList[idx1];
+          if (typeof idx2 === "number") {
+            commentList.second_comment.splice(idx2, 1);
+            this.commentList.splice(idx1, 1, commentList);
+          } else {
+            this.commentList.splice(idx1, 1);
+          }
         }
       });
     }
   },
   created() {
     this.getCommentData();
+
+    let commentLikedArray = window.localStorage.getItem("commentLikedArray");
+    if (!commentLikedArray) {
+      // 若没有则设置一个
+      window.localStorage.setItem("commentLikedArray", "[]");
+    } else {
+      this.commentLikedArray = JSON.parse(commentLikedArray); // 有含有则进行获取
+    }
   },
   mounted() {}
 };
 </script>
 <style scoped lang="less">
 .commentList {
+  // 内容部分
   .contentList {
     .comBox {
       display: flex;
@@ -153,10 +285,11 @@ export default {
       .content {
         width: calc(100% - 50px);
         padding-left: 10px;
+        word-break: break-all;
         .name {
           color: @mainColor2;
           font-size: 14px;
-          margin-bottom: 3px;
+          margin-bottom: 5px;
 
           display: flex;
           align-items: center;
@@ -187,7 +320,13 @@ export default {
           color: @mainColor3;
           font-size: 12px;
           margin-bottom: 10px;
+          display: flex;
+          justify-content: space-between;
+          .index {
+            padding: 0 8px;
+          }
         }
+
         .cnt {
           color: @mainColor;
           min-height: 25px;
@@ -196,6 +335,16 @@ export default {
         }
         a {
           cursor: pointer;
+        }
+        // 点过赞
+        .isHas {
+          color: @redColor;
+        }
+        a.cb {
+          color: @blueColor;
+        }
+        a.del {
+          color: @orangeColor;
         }
         .linkedName {
           color: @blueColor;
@@ -237,6 +386,12 @@ export default {
         }
       }
     }
+  }
+
+  // 分页部分
+  .pageList {
+    text-align: center;
+    margin-top: 20px;
   }
 
   .sendMsgBox {

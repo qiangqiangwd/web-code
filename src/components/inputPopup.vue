@@ -1,21 +1,31 @@
 <template>
   <div class="inputPopup" v-if="visibility">
     <div class="table">
-      <div class="cell" @click.self="_close">
+      <div class="cell">
+        <!-- @click.self="_close" -->
         <div class="inputBox">
           <div class="firstTit">
             发表评论
             <i class="iconfont">&#xe88f;</i>
+            <a class="iconfont closeBtn" @click="_close" title="关闭">&#xe899;</a>
           </div>
-          <div
-            ref="textarea"
-            :class="['textarea',comment?'':'null',comment.length>=maxLength?'full':'']"
-            contenteditable="true"
-            @input="getMsg"
-            @focus="inputFocus"
-            @blur="inputBlur"
-            :word-number="comment.length+'/'+maxLength"
-          >{{placeholder}}</div>
+          <div class="numberBox" :word-number="comment.length+'/'+maxLength">
+            <div
+              ref="textarea"
+              :class="['textarea',comment?'':'null',comment.length>=maxLength?'full':'']"
+              contenteditable="true"
+              @input="getMsg"
+              @focus="inputFocus"
+              @blur="inputBlur"
+              :word-number="comment.length+'/'+maxLength"
+            >{{placeholder}}</div>
+            <!-- <textarea
+              ref="textarea"
+              :class="['textarea',comment?'':'null',comment.length>=maxLength?'full':'']"
+              v-model="comment"
+              :placeholder="placeholder"
+            ></textarea>-->
+          </div>
           <div class="buttonBox">
             <a
               class="addFaceIcon iconfont"
@@ -23,7 +33,10 @@
               @click="takeFaceBao"
               title="添加表情"
             >&#xe8ac;</a>
-            <button :class="['mainButton',comment?'success':'disabled']" @click="createNewComment">提交评论</button>
+            <button
+              :class="['mainButton',comment?'success':'disabled']"
+              @click="createNewComment"
+            >提交评论</button>
           </div>
         </div>
       </div>
@@ -35,7 +48,7 @@
 import $ from "../assets/js/posAddElem";
 import { mapActions } from "vuex";
 export default {
-  props: ["visibility"],
+  props: ["visibility", "linkedData"],
   data() {
     return {
       comment: "",
@@ -45,6 +58,11 @@ export default {
       // 表情弹框对象
       faceBaoObj: null
     };
+  },
+  watch: {
+    linkedData(newVal) {
+      this.placeholder = newVal ? "@" + newVal.name : "不发表下自己的见解么？";
+    }
   },
   methods: {
     ...mapActions("ajax", ["newComment"]),
@@ -114,15 +132,19 @@ export default {
     // 创建新的评论
     createNewComment() {
       let comment = this.comment.trim();
-      console.log(this.$refs.textarea.innerText);
-      if(!comment){
-        this.$message('嘿！内容不能为空或纯空格哦~');
-        return
+      // console.log(this.$refs.textarea.innerText);
+      // console.log("获取的关联信息：", this.linkedData);
+      if (!comment) {
+        this.$message("嘿！内容不能为空或纯空格哦~");
+        return;
       }
+      let linkedData = this.linkedData;
       let sendData = {
-        content: encodeURIComponent(comment), // 内容
-        linked_comment_id: '', // 关联评论id
-        linked_user_id: '', // 关联用户id
+        content: encodeURIComponent(comment.replace(/\%/g, "%25")), // 内容
+        linked_comment_id: linkedData
+          ? linkedData.linked_comment_id || linkedData.id
+          : "", // 关联评论id
+        linked_user_id: linkedData ? linkedData.user_id : "" // 关联用户id
         // linked_article_id: null // 关联文章id【这里不用】
       };
       this.newComment(sendData).then(res => {
@@ -132,15 +154,14 @@ export default {
           this.$message(res.msg);
           this._close(); // 关弹框
           // 更新评论
-          this.$emit('updateComment');
+          this.$emit("updateComment");
         }
       });
     }
-  },
-  created() {
-    this.showPlaceholder = this.placeholder; // 获取显示的提示语
-  },
-  mounted() {}
+  }
+  // created() {
+  //   this.showPlaceholder = this.placeholder; // 获取显示的提示语
+  // },
 };
 </script>
 <style scoped lang="less">
@@ -152,6 +173,9 @@ export default {
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
   z-index: 1000;
+  // .firstTit {
+  //   position: relative;
+  // }
   .table {
     display: table;
     width: 100%;
@@ -170,6 +194,21 @@ export default {
       border-radius: 4px;
       text-align: left;
       box-sizing: border-box;
+      position: relative;
+      .closeBtn {
+        position: absolute;
+        right: 10px;
+        top: 10px;
+        color: @redColor;
+        font-size: 26px;
+        cursor: pointer;
+        opacity: .5;
+        transition: opacity linear .25s;
+        &:hover{
+          opacity: 1;
+          transition: opacity linear .25s;
+        }
+      }
       .firstTit {
         margin-bottom: 10px;
       }
@@ -206,22 +245,29 @@ export default {
     width: 100%;
     outline: none;
     box-sizing: border-box;
-    // resize: none;
-    border: 1px solid @borderColor;
-    border-radius: 4px;
+    resize: none;
     padding: 10px 10px 20px 10px;
     font-size: 14px;
     min-height: 80px;
     color: @mainColor;
+    border: none;
+  }
+  .numberBox {
+    width: 100%;
+    display: inline-block;
+    line-height: 1;
     position: relative;
-    &[word-number]::after {
-      content: attr(word-number);
-      color: @mainColor3;
-      font-size: 12px;
-      position: absolute;
-      bottom: 3px;
-      right: 10px;
-    }
+    font-size: 0;
+    border: 1px solid @borderColor;
+    border-radius: 4px;
+  }
+  .numberBox[word-number]::after {
+    content: attr(word-number);
+    color: @mainColor3;
+    font-size: 12px;
+    position: absolute;
+    bottom: 3px;
+    right: 10px;
   }
 }
 </style>

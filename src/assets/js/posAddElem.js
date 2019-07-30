@@ -52,7 +52,6 @@ class posAddElem {
     faceBaoAddEvent(){
         let imgHtml = this.innerHTML;
         this.callback(imgHtml);
-        // console.log(this,this.callback);
     }
     // 关闭表情包弹框
     hideFaceBao(){
@@ -60,7 +59,6 @@ class posAddElem {
         for (let i = 0; i < this.liEvent.length;i++){
             this.liEvent[i].removeEventListener('click', this.faceBaoAddEvent);
         }
-        // console.log(this.liEvent);
         document.body.removeChild(this.outerDiv); // 清除最外层
     }
 }
