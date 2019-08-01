@@ -5,10 +5,13 @@
 @Invalid: #c5c8ce; // 再次级
 @borderColor: #e8eaec; // 再次级
 
+// 背景颜色
+@bodyColor: #f9f9f9;
+
 @successColor: #19be6b; // 成功颜色
 @redColor: #ed4014; // 红色
 @blueColor: #5cadff; //
-@orangeColor: #E6A23C; //
+@orangeColor: #e6a23c; //
 
 // 公共按钮样式
 .mainButton {
@@ -65,4 +68,32 @@ li {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+}
+
+// 视窗小于 800px 时
+@media only screen and (max-width: 800px) {
+  #home {
+    .containerBox > .content {
+      width: 100%;
+      margin-right: 0;
+    }
+    .userInfoBox {
+      display: none;
+      width: 250px;
+    }
+  }
+
+  #headNav {
+    .headerNav {
+      background: #ffffff;
+      border-bottom: 1px solid @bodyColor;
+      box-shadow: 0 0 10px 5px #eeeeee;
+    }
+    .web {
+      display: none;
+    }
+    .phone {
+      display: block;
+    }
+  }
 }

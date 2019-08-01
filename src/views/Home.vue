@@ -1,20 +1,12 @@
 <template>
   <div class="home" id="home">
-    <!-- 导航栏区 -->
-    <div class="headerNav">
-      <div class="mainNav web">
-        <a>内容区</a>
-        <a class="active">讨论区</a>
-      </div>
-      <div class="mainNav phone">
-        <div class="user">cqq</div>
-      </div>
-    </div>
+    <!-- 顶部导航 -->
+    <topNav></topNav>
 
     <div class="containerBox">
       <!-- 内容部分 -->
       <div class="content">
-        <comment></comment>
+        <router-view />
       </div>
       <!-- 个人信息框 -->
       <div class="userInfoBox">
@@ -45,7 +37,7 @@
 
 <script>
 import loeRes from "../components/logRes";
-import comment from "./Home/comment";
+import topNav from "./Home/topNav";
 // import { mapActions } from "vuex";
 export default {
   name: "home",
@@ -56,7 +48,7 @@ export default {
   },
   components: {
     loeRes,
-    comment
+    topNav
   },
   computed: {
     // 公共用户信息
@@ -73,51 +65,18 @@ export default {
     }
   },
   created() {},
-  mounted() {}
+  mounted() {
+  }
 };
 </script>
 
 <style scoped lang="less">
-.headerNav {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 20px 0;
-  .mainNav {
-    display: flex;
-
-    max-width: 1000px;
-    margin: 0 auto;
-  }
-  .web {
-    display: none;
-    a {
-      display: block;
-      width: 100px;
-      text-align: center;
-      cursor: pointer;
-      padding: 10px 0;
-      background: #ffffff;
-      border-radius: 4px;
-      margin-right: 20px;
-      color: @mainColor;
-    }
-    .active {
-      background: @successColor;
-      color: #ffffff;
-    }
-  }
-  .phone{
-    // display: none;
-  }
-}
-
 .containerBox {
   margin-top: 60px;
   display: flex;
   justify-content: space-between;
   // flex-wrap: wrap;
+  align-items: flex-start;
   .userInfoBox,
   .content {
     background: #ffffff;
@@ -170,23 +129,6 @@ export default {
       background: @mainColor;
       color: #ffffff;
       border-radius: 2px;
-    }
-  }
-}
-
-// 视窗小于 800px 时
-@media only screen and (max-width: 800px) {
-  #home {
-    // .mainNav {
-    //   display: none;
-    // }
-    .content {
-      width: 100%;
-      margin-right: 0;
-    }
-    .userInfoBox {
-      display: none;
-      width: 250px;
     }
   }
 }

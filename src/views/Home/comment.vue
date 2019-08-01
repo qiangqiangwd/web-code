@@ -63,7 +63,7 @@
                   <a>{{sItm.name}}</a>
                   <div class="iconList">
                     <a
-                      :class="item.id | isAddLiked(commentLikedArray)"
+                      :class="sItm.id | isAddLiked(commentLikedArray)"
                       title="赞"
                       @click="likedChange(sItm,index,sIndex)"
                     >
@@ -233,19 +233,26 @@ export default {
 
     // 删除评论
     delCommentOpt(data, idx1, idx2) {
-      this.delComment({
-        id: data.id
-      }).then(res => {
-        if (res.status) {
-          this.$message("删除成功");
-          // 删除对应的数据
-          let commentList = this.commentList[idx1];
-          if (typeof idx2 === "number") {
-            commentList.second_comment.splice(idx2, 1);
-            this.commentList.splice(idx1, 1, commentList);
-          } else {
-            this.commentList.splice(idx1, 1);
-          }
+      this.$confirm({
+        title: "确认删除？？",
+        content: "删除后评论不可恢复",
+        sure() {
+          // 确认删除
+          this.delComment({
+            id: data.id
+          }).then(res => {
+            if (res.status) {
+              this.$message("删除成功");
+              // 删除对应的数据
+              let commentList = this.commentList[idx1];
+              if (typeof idx2 === "number") {
+                commentList.second_comment.splice(idx2, 1);
+                this.commentList.splice(idx1, 1, commentList);
+              } else {
+                this.commentList.splice(idx1, 1);
+              }
+            }
+          });
         }
       });
     }
